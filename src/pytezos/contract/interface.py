@@ -25,8 +25,8 @@ from pytezos.michelson.format import micheline_to_michelson
 from pytezos.michelson.micheline import MichelsonRuntimeError
 from pytezos.michelson.parse import michelson_to_micheline
 from pytezos.michelson.program import MichelsonProgram
-from pytezos.michelson.types.base import generate_pydoc
 from pytezos.michelson.sections import ViewSection
+from pytezos.michelson.types.base import generate_pydoc
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc import ShellQuery
 
@@ -62,16 +62,16 @@ class ContractInterface(ContextMixin):
             setattr(self, entrypoint, attr)
 
         for view_name, view_ty in self.views.items():
-            attr = ContractView(
+            view_attr = ContractView(
                 context=context,
                 name=view_name,
                 parameter=view_ty.args[1].as_micheline_expr(),
                 return_type=view_ty.args[2].as_micheline_expr(),
                 code=view_ty.args[3].as_micheline_expr(),  # type: ignore
             )
-            attr.__doc__ = view_ty.generate_pydoc()  # type: ignore
+            view_attr.__doc__ = view_ty.generate_pydoc()  # type: ignore
             assert not hasattr(self, view_name), f'View name collision {view_name}'
-            setattr(self, view_name, attr)
+            setattr(self, view_name, view_attr)
 
     def __repr__(self) -> str:
         res = [
