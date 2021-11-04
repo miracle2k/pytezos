@@ -5,6 +5,8 @@ from pytezos.crypto.key import Key
 EDO = 'PtEdo2ZkT9oKpimTah6x2embF25oss54njMuPzkJTEi5RqfdZFA'
 FLORENCE = 'PsFLorenaUUuikDWvMDr6fGBRG8kt3e3D3fHoXK1j1BFRxeSH4i'
 GRANADA = 'PtGRANADsDU8R9daYKAgWnQYAJ64omN1o3KMGVCykShA97vQbvV'
+HANGZHOU = 'PtHangzHogokSuiMHemCuowEavgYTP8J5qQ9fQS793MHYFpCY3r'
+LATEST = GRANADA
 
 sandbox_commitment = {
     "mnemonic": [
@@ -84,7 +86,7 @@ sandbox_params: Dict[str, Any] = {
 
 
 def get_protocol_parameters(protocol_hash: str) -> Dict[str, Any]:
-    if protocol_hash == GRANADA:
+    if protocol_hash not in {EDO, FLORENCE}:
         return {
             **sandbox_params,
             'minimal_block_delay': '0',

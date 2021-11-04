@@ -27,5 +27,6 @@ operation_tags = {
     'reveal': 107,
     'transaction': 108,
     'origination': 109,
-    'delegation': 110
+    'delegation': 110,
+    'register_global_constant': 111,
 }

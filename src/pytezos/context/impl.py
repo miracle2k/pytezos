@@ -1,17 +1,18 @@
 from datetime import datetime
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from pytezos.context.abstract import AbstractContext, get_originated_address  # type: ignore
 from pytezos.crypto.encoding import base58_encode
 from pytezos.crypto.key import Key
 from pytezos.logging import logger
-from pytezos.michelson.micheline import get_script_section
+from pytezos.michelson.micheline import get_script_section, get_script_sections
 from pytezos.operation import DEFAULT_OPERATIONS_TTL, MAX_OPERATIONS_TTL
 from pytezos.rpc.errors import RpcError
 from pytezos.rpc.shell import ShellQuery
 
 DEFAULT_IPFS_GATEWAY = 'https://ipfs.io/ipfs'
+
 
 class ExecutionContext(AbstractContext):
 
@@ -38,6 +39,7 @@ class ExecutionContext(AbstractContext):
         self.parameter_expr = get_script_section(script, name='parameter') if script and not tzt else None
         self.storage_expr = get_script_section(script,  name='storage') if script and not tzt else None
         self.code_expr = get_script_section(script, name='code') if script else None
+        self.views_expr = get_script_sections(script, name='view') if script else []
         self.input_expr = get_script_section(script, name='input') if script and tzt else None
         self.output_expr = get_script_section(script,  name='output') if script and tzt else None
         self.sender_expr = get_script_section(script, name='sender') if script and tzt else None
@@ -59,6 +61,7 @@ class ExecutionContext(AbstractContext):
         self.debug = False
         self._sandboxed: Optional[bool] = None
         self.ipfs_gateway = (ipfs_gateway or DEFAULT_IPFS_GATEWAY).rstrip('/')
+        self.storage_value = script.get('storage') if script else None
 
     def __copy__(self):
         raise ValueError("It's not allowed to copy context")
@@ -73,7 +76,8 @@ class ExecutionContext(AbstractContext):
     @property
     def script(self) -> Optional[dict]:
         if self.parameter_expr and self.storage_expr and self.code_expr:
-            return dict(code=[self.parameter_expr, self.storage_expr, self.code_expr])
+            return dict(code=[self.parameter_expr, self.storage_expr, self.code_expr, *self.views_expr],
+                        storage=self.storage_expr)
         else:
             return None
 
@@ -125,7 +129,7 @@ class ExecutionContext(AbstractContext):
         key_hash = self.key.public_key_hash()
         mempool = self.shell.mempool.pending_operations()
 
-        for operation in chain(mempool.get('applied', []), mempool.get('unprocessed', []):
+        for operation in chain(mempool.get('applied', []), mempool.get('unprocessed', [])):
             if isinstance(operation, list):
                 operation = operation[1]
             for content in operation.get('contents', []):
@@ -173,7 +177,7 @@ class ExecutionContext(AbstractContext):
         assert amount <= balance, f'cannot spend {amount} tez, {balance} tez left'
         self.balance_update -= amount
 
-    def get_parameter_expr(self, address=None) -> Optional[str]:
+    def get_parameter_expr(self, address=None) -> Optional:
         if self.shell and address:
             if address == get_originated_address(0):
                 return None  # dummy callback
@@ -182,11 +186,37 @@ class ExecutionContext(AbstractContext):
                 return get_script_section(script, name='parameter', cls=None, required=True)
         return None if address else self.parameter_expr
 
-    def get_storage_expr(self):
-        return self.storage_expr
+    def get_storage_expr(self, address=None) -> Optional:
+        if self.shell and address:
+            script = self.shell.contracts[address].script()
+            return get_script_section(script, name='storage', cls=None, required=True)
+        return None if address else self.storage_expr
+
+    def get_storage_value(self, address=None) -> Optional:
+        if self.shell:
+            return self.shell.head.context.contracts[address].storage()
+        return None if address else self.storage_value
 
     def get_code_expr(self):
         return self.code_expr
+
+    def get_views_expr(self) -> List:
+        return self.views_expr
+
+    def get_view_expr(self, name, address=None) -> Optional:
+        if address:
+            if self.shell:
+                script = self.shell.contracts[address].script()
+                views = get_script_sections(script, name='view', cls=None)
+            else:
+                return None
+        else:
+            views = self.views_expr
+
+        try:
+            return next(view for view in views if view['args'][0]['string'] == name)
+        except (StopIteration, KeyError, IndexError):
+            return None
 
     def get_input_expr(self):
         return self.input_expr
@@ -220,6 +250,9 @@ class ExecutionContext(AbstractContext):
 
     def set_storage_expr(self, expr):
         self.storage_expr = expr
+
+    def set_storage_value(self, value):
+        self.storage_value = value
 
     def set_parameter_expr(self, expr):
         self.parameter_expr = expr

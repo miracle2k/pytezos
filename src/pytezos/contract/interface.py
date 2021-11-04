@@ -3,7 +3,7 @@ import logging
 from decimal import Decimal
 from functools import lru_cache
 from os.path import exists, expanduser
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Type
 from urllib.parse import urlparse
 
 import requests
@@ -13,6 +13,7 @@ from deprecation import deprecated  # type: ignore
 from pytezos.context.mixin import ContextMixin  # type: ignore
 from pytezos.context.mixin import ExecutionContext
 from pytezos.contract.data import ContractData
+from pytezos.contract.view import ContractView
 from pytezos.contract.entrypoint import ContractEntrypoint
 from pytezos.contract.metadata import ContractMetadata
 from pytezos.contract.result import ContractCallResult
@@ -24,7 +25,7 @@ from pytezos.michelson.format import micheline_to_michelson
 from pytezos.michelson.micheline import MichelsonRuntimeError
 from pytezos.michelson.parse import michelson_to_micheline
 from pytezos.michelson.program import MichelsonProgram
-from pytezos.michelson.types.base import generate_pydoc
+from pytezos.michelson.types.base import generate_pydoc, MichelsonType
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc import ShellQuery
 
@@ -49,12 +50,27 @@ class ContractInterface(ContextMixin):
         self._logger = logging.getLogger(__name__)
         self._storage: Optional[ContractData] = None
         self.entrypoints = self.program.parameter.list_entrypoints()
+        self.views = {view.name: view for view in self.program.views}  # type: Dict[str, Type[MichelsonType]]
+
         for entrypoint, ty in self.entrypoints.items():
             if entrypoint == 'token_metadata':
                 continue
             attr = ContractEntrypoint(context=context, entrypoint=entrypoint)
             attr.__doc__ = generate_pydoc(ty, entrypoint)
+            assert not hasattr(self, entrypoint), f'Entrypoint name collision {entrypoint}'
             setattr(self, entrypoint, attr)
+
+        for view_name, ty in self.views.items():
+            attr = ContractView(
+                context=context,
+                name=view_name,
+                parameter=ty.args[1].as_micheline_expr(),
+                return_type=ty.args[2].as_micheline_expr(),
+                code=ty.args[3].as_micheline_expr()  # type: ignore
+            )
+            attr.__doc__ = ty.generate_pydoc()  # type: ignore
+            assert not hasattr(self, view_name), f'View name collision {view_name}'
+            setattr(self, view_name, attr)
 
     def __repr__(self) -> str:
         res = [
@@ -63,6 +79,8 @@ class ContractInterface(ContextMixin):
             '.parameter\t# root entrypoint',
             '\nEntrypoints',
             *list(map(lambda x: f'.{x}()', self.entrypoints)),
+            '\nViews',
+            *list(map(lambda x: f'.{x}()', self.views)),
             '\nHelpers',
             get_class_docstring(self.__class__, attr_filter=lambda x: x not in self.entrypoints),
         ]
@@ -208,6 +226,7 @@ class ContractInterface(ContextMixin):
         :param key: base58 encoded key, path to the faucet file, alias from tezos-client, or instance of `Key`
         :param block_id: block height / hash / offset to use, default is `head`
         :param mode: whether to use `readable` or `optimized` encoding for parameters/storage/other
+        :param ipfs_gateway: override IPFS gateway URI
         :rtype: ContractInterface
         """
         has_address = self.context.address is not None

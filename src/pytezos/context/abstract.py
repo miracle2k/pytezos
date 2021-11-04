@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from pyblake2 import blake2b  # type: ignore
 
@@ -66,10 +66,19 @@ class AbstractContext:
     def get_parameter_expr(self, address=None) -> Optional:  # type: ignore
         raise NotImplementedError
 
-    def get_storage_expr(self):
+    def get_storage_expr(self, address=None) -> Optional:  # type: ignore
+        raise NotImplementedError
+
+    def get_storage_value(self, address=None) -> Optional:  # type: ignore
         raise NotImplementedError
 
     def get_code_expr(self):
+        raise NotImplementedError
+
+    def get_view_expr(self, name, address=None) -> Optional:  # type: ignore
+        raise NotImplementedError
+
+    def get_views_expr(self) -> List:  # type: ignore
         raise NotImplementedError
 
     def get_input_expr(self):
@@ -105,10 +114,16 @@ class AbstractContext:
     def set_storage_expr(self, type_expr):
         raise NotImplementedError
 
+    def set_storage_value(self, value):
+        raise NotImplementedError
+
     def set_parameter_expr(self, type_expr):
         raise NotImplementedError
 
     def set_code_expr(self, code_expr):
+        raise NotImplementedError
+
+    def set_view_expr(self, name, view_expr):
         raise NotImplementedError
 
     def set_input_expr(self, code_expr):

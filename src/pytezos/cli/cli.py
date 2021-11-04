@@ -18,7 +18,7 @@ from pytezos.michelson.types.base import generate_pydoc
 from pytezos.operation.result import OperationResult
 from pytezos.rpc.errors import RpcError
 from pytezos.sandbox.node import SandboxedNodeTestCase
-from pytezos.sandbox.parameters import EDO, FLORENCE
+from pytezos.sandbox.parameters import EDO, FLORENCE, HANGZHOU
 
 kernel_js_path = join(dirname(dirname(__file__)), 'assets', 'kernel.js')
 kernel_json = {
@@ -44,6 +44,7 @@ def get_local_contract_path(path, extension='tz'):
     if exists(path):
         return path
     return False
+
 
 def get_contract(path):
     path = get_local_contract_path(path)
@@ -314,6 +315,7 @@ def smartpy_compile(
     else:
         logger.error('No local script found. Please ensure a valid script is present or specify path.')
 
+
 @cli.command(help='Run containerized sandbox node')
 @click.option('--image', type=str, help='Docker image to use', default=SandboxedNodeTestCase.IMAGE)
 @click.option('--protocol', type=click.Choice(['florence', 'edo']), help='Protocol to use', default='florence')
@@ -332,6 +334,7 @@ def sandbox(
     protocol = {
         'edo': EDO,
         'florence': FLORENCE,
+        'hangzhou': HANGZHOU,
     }[protocol]
 
     SandboxedNodeTestCase.PROTOCOL = protocol
@@ -353,6 +356,7 @@ def sandbox(
             time.sleep(interval)
         except KeyboardInterrupt:
             break
+
 
 @cli.command(help='Update Ligo compiler (docker pull ligolang/ligo)')
 @click.option('--tag', '-t', type=str, help='Version or tag to pull', default='0.13.0')
