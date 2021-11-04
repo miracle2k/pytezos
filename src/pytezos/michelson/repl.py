@@ -171,12 +171,7 @@ class Interpreter:
             return None, None, stdout, e
 
     @staticmethod
-    def run_view(
-        name: str,
-        parameter,
-        storage,
-        context: ExecutionContext
-    ) -> Tuple[Any, Any, Optional[Exception]]:
+    def run_view(name: str, parameter, storage, context: ExecutionContext) -> Tuple[Any, Any, Optional[Exception]]:
         ctx = ExecutionContext(
             shell=context.shell,
             key=context.key,

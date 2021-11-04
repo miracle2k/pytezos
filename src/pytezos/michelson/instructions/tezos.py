@@ -3,22 +3,11 @@ from typing import List, Optional, Tuple, Type, cast
 
 from pytezos.context.abstract import AbstractContext  # type: ignore
 from pytezos.michelson.instructions.base import MichelsonInstruction, format_stdout
-from pytezos.michelson.micheline import MichelineSequence, MichelineLiteral, MichelsonRuntimeError
-from pytezos.michelson.sections import ParameterSection, ViewSection, StorageSection
+from pytezos.michelson.micheline import MichelineLiteral, MichelineSequence, MichelsonRuntimeError
+from pytezos.michelson.sections import ParameterSection, StorageSection, ViewSection
 from pytezos.michelson.stack import MichelsonStack
-from pytezos.michelson.types import (
-    AddressType,
-    ChainIdType,
-    ContractType,
-    KeyHashType,
-    MutezType,
-    NatType,
-    OperationType,
-    OptionType,
-    TimestampType,
-    UnitType,
-    PairType,
-)
+from pytezos.michelson.types import (AddressType, ChainIdType, ContractType, KeyHashType, MutezType, NatType, OperationType, OptionType,
+                                     PairType, TimestampType, UnitType)
 from pytezos.michelson.types.base import MichelsonType
 
 
@@ -279,14 +268,14 @@ class ViewInstruction(MichelsonInstruction, prim='VIEW', args_len=2):
         input_value, view_address = cast(Tuple[MichelsonType, AddressType], stack.pop2())
 
         name = cast(Type[MichelineLiteral], cls.args[0]).get_string()
-        address = str(view_address)
+        address: Optional[str] = str(view_address)
         if address == context.get_self_address():
             address = None
         else:
             # FIXME: spawn new context with patched BALANCE and others
             logging.warning('PyTezos does not support external views with BALANCE or other context-dependent opcodes')
 
-        return_ty = cls.args[1]
+        return_ty = cast(Type[MichelsonType], cls.args[1])
 
         try:
             view_expr = context.get_view_expr(name, address=address)
@@ -306,7 +295,7 @@ class ViewInstruction(MichelsonInstruction, prim='VIEW', args_len=2):
             parameter = PairType.from_comb([input_value, storage_value])
             view_stack = MichelsonStack([parameter])
             # FIXME: need to patch context.balance
-            view_code = view_ty.args[3]
+            view_code = cast(MichelineSequence, view_ty.args[3])
             view_code.execute(view_stack, stdout, context)
             if len(view_stack) != 1:
                 raise MichelsonRuntimeError('Expected single item on the stack, got', view_stack)

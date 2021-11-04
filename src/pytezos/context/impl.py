@@ -1,6 +1,6 @@
 from datetime import datetime
 from itertools import chain
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 from pytezos.context.abstract import AbstractContext, get_originated_address  # type: ignore
 from pytezos.crypto.encoding import base58_encode
@@ -177,7 +177,7 @@ class ExecutionContext(AbstractContext):
         assert amount <= balance, f'cannot spend {amount} tez, {balance} tez left'
         self.balance_update -= amount
 
-    def get_parameter_expr(self, address=None) -> Optional:
+    def get_parameter_expr(self, address=None) -> Optional[dict]:
         if self.shell and address:
             if address == get_originated_address(0):
                 return None  # dummy callback
@@ -186,13 +186,13 @@ class ExecutionContext(AbstractContext):
                 return get_script_section(script, name='parameter', cls=None, required=True)
         return None if address else self.parameter_expr
 
-    def get_storage_expr(self, address=None) -> Optional:
+    def get_storage_expr(self, address=None) -> Optional[dict]:
         if self.shell and address:
             script = self.shell.contracts[address].script()
             return get_script_section(script, name='storage', cls=None, required=True)
         return None if address else self.storage_expr
 
-    def get_storage_value(self, address=None) -> Optional:
+    def get_storage_value(self, address=None) -> Optional[dict]:
         if self.shell:
             return self.shell.head.context.contracts[address].storage()
         return None if address else self.storage_value
@@ -200,10 +200,10 @@ class ExecutionContext(AbstractContext):
     def get_code_expr(self):
         return self.code_expr
 
-    def get_views_expr(self) -> List:
+    def get_views_expr(self) -> List[dict]:
         return self.views_expr
 
-    def get_view_expr(self, name, address=None) -> Optional:
+    def get_view_expr(self, name, address=None) -> Optional[dict]:
         if address:
             if self.shell:
                 script = self.shell.contracts[address].script()
@@ -250,9 +250,6 @@ class ExecutionContext(AbstractContext):
 
     def set_storage_expr(self, expr):
         self.storage_expr = expr
-
-    def set_storage_value(self, value):
-        self.storage_value = value
 
     def set_parameter_expr(self, expr):
         self.parameter_expr = expr

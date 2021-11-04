@@ -57,7 +57,7 @@ def forge_operation(content: Dict[str, Any]) -> bytes:
         'delegation': forge_delegation,
         'endorsement': forge_endorsement,
         'endorsement_with_slot': forge_endorsement_with_slot,
-        'register_global_constant': forge_register_global_constant
+        'register_global_constant': forge_register_global_constant,
     }
     encode_proc = encode_content.get(content['kind'])
     if not encode_proc:

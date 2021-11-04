@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 from pyblake2 import blake2b  # type: ignore
 
@@ -112,9 +112,6 @@ class AbstractContext:
         raise NotImplementedError
 
     def set_storage_expr(self, type_expr):
-        raise NotImplementedError
-
-    def set_storage_value(self, value):
         raise NotImplementedError
 
     def set_parameter_expr(self, type_expr):

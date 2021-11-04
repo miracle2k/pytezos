@@ -323,18 +323,6 @@ def get_script_section(sequence: Type[MichelineSequence], cls: Type[MichelineT],
     ...
 
 
-@overload
-def get_script_sections(sequence: Type[MichelineSequence], cls: None, name: str)\
-        -> List[MichelineT]:
-    ...
-
-
-@overload
-def get_script_sections(sequence: Type[MichelineSequence], cls: Type[MichelineT], name: None)\
-        -> List[MichelineT]:
-    ...
-
-
 def get_script_section(sequence, cls=None, name=None, required=False):
     try:
         if cls:
@@ -347,6 +335,18 @@ def get_script_section(sequence, cls=None, name=None, required=False):
         if required:
             raise
     return None
+
+
+@overload
+def get_script_sections(sequence: Type[MichelineSequence], cls: None, name: str)\
+        -> List[MichelineT]:
+    ...
+
+
+@overload
+def get_script_sections(sequence: Type[MichelineSequence], cls: Type[MichelineT], name: None)\
+        -> List[MichelineT]:
+    ...
 
 
 def get_script_sections(sequence, cls=None, name=None):

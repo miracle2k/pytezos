@@ -7,8 +7,8 @@ from pytezos.contract.call import ContractCall, ContractCallResult, skip_nones
 from pytezos.jupyter import get_class_docstring
 from pytezos.logging import logger
 from pytezos.michelson.micheline import MichelsonRuntimeError
-from pytezos.michelson.types.base import MichelsonType, generate_pydoc
 from pytezos.michelson.repl import Interpreter
+from pytezos.michelson.types.base import MichelsonType, generate_pydoc
 
 
 def format_view_script(param_ty_expr, storage_ty_expr, return_ty_expr, code_expr):
@@ -125,7 +125,7 @@ class ContractView(ContextMixin):
             param_ty_expr=self.param_ty_expr,
             return_ty_expr=self.return_ty_expr,
             code_expr=self.code_expr,
-            name=self.name
+            name=self.name,
         )
 
 
@@ -133,13 +133,7 @@ class ContractViewCall(ContextMixin):
     """Proxy class encapsulating a contract call: contract type scheme, contract address, parameters, and amount"""
 
     def __init__(
-        self,
-        context: ExecutionContext,
-        param_expr: dict,
-        param_ty_expr: dict,
-        return_ty_expr: dict,
-        code_expr: list,
-        name: str
+        self, context: ExecutionContext, param_expr: dict, param_ty_expr: dict, return_ty_expr: dict, code_expr: list, name: str
     ) -> None:
         super().__init__(context=context)
         self.name = name
@@ -172,7 +166,7 @@ class ContractViewCall(ContextMixin):
             param_ty_expr=self.param_ty_expr,
             storage_ty_expr=self.context.storage_expr,
             return_ty_expr=self.return_ty_expr,
-            code_expr=self.code_expr
+            code_expr=self.code_expr,
         )
         return_ty = MichelsonType.match(self.return_ty_expr)
         initial_storage = return_ty.dummy(self.context).to_micheline_value(lazy_diff=True)
@@ -208,17 +202,9 @@ class ContractViewCall(ContextMixin):
         :param gas_limit: restrict max consumed gas
         :rtype: ContractCallResult
         """
-        parameters = format_view_params(
-            param_expr=self.param_expr,
-            storage_expr=self._encode_storage(storage)
-        )
+        parameters = format_view_params(param_expr=self.param_expr, storage_expr=self._encode_storage(storage))
         query = self._prepare_query(
-            source=source,
-            sender=sender,
-            balance=balance,
-            chain_id=chain_id,
-            gas_limit=gas_limit,
-            parameters=parameters
+            source=source, sender=sender, balance=balance, chain_id=chain_id, gas_limit=gas_limit, parameters=parameters
         )
         res = self.shell.blocks[self.block_id].helpers.scripts.run_code.post(query)
         return ContractCallResult.from_run_code(res, parameters=parameters, context=self.context)
@@ -229,15 +215,12 @@ class ContractViewCall(ContextMixin):
         :param storage: initial storage as Python object, leave None if you want to generate a dummy one
         :returns: Decoded return value
         """
-        parameters = format_view_params(
-            param_expr=self.param_expr,
-            storage_expr=self._encode_storage(storage)
-        )
+        parameters = format_view_params(param_expr=self.param_expr, storage_expr=self._encode_storage(storage))
         script = format_view_script(
             param_ty_expr=self.param_ty_expr,
             storage_ty_expr=self.context.storage_expr,
             return_ty_expr=self.return_ty_expr,
-            code_expr=self.code_expr
+            code_expr=self.code_expr,
         )
         _, storage, stdout, error = Interpreter.run_callback(
             parameter=parameters['value'],
@@ -261,13 +244,7 @@ class ContractViewCall(ContextMixin):
             name=self.name,
             parameter=self.param_expr,
             storage=self._encode_storage(storage),
-            context=self._spawn_context(
-                balance=balance,
-                script={
-                    **self.context.script,
-                    'storage': self._encode_storage(storage)
-                }
-            ),
+            context=self._spawn_context(balance=balance, script={**self.context.script, 'storage': self._encode_storage(storage)}),
         )
         if error:
             logger.debug('\n'.join(stdout))

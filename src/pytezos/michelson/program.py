@@ -4,17 +4,10 @@ from pytezos.context.impl import ExecutionContext
 from pytezos.crypto.encoding import base58_encode
 from pytezos.michelson.instructions.base import MichelsonInstruction, format_stdout
 from pytezos.michelson.instructions.tzt import BigMapInstruction, StackEltInstruction
-from pytezos.michelson.micheline import (
-    MichelineSequence,
-    get_script_section,
-    get_script_sections,
-    try_catch,
-    validate_sections,
-)
+from pytezos.michelson.micheline import MichelineSequence, get_script_section, get_script_sections, try_catch, validate_sections
 from pytezos.michelson.sections.code import CodeSection
 from pytezos.michelson.sections.parameter import ParameterSection
 from pytezos.michelson.sections.storage import StorageSection
-from pytezos.michelson.sections.view import ViewSection
 from pytezos.michelson.sections.tzt import (
     AmountSection,
     BalanceSection,
@@ -27,8 +20,9 @@ from pytezos.michelson.sections.tzt import (
     SenderSection,
     SourceSection,
 )
+from pytezos.michelson.sections.view import ViewSection
 from pytezos.michelson.stack import MichelsonStack
-from pytezos.michelson.types import ListType, OperationType, PairType, MichelsonType
+from pytezos.michelson.types import ListType, MichelsonType, OperationType, PairType
 
 
 class MichelsonProgram:
@@ -62,7 +56,14 @@ class MichelsonProgram:
     @staticmethod
     def create(sequence: Type[MichelineSequence]) -> Type['MichelsonProgram']:
         """Create MichelsonProgram type from micheline"""
-        validate_sections(sequence, ('parameter', 'storage', 'code',))
+        validate_sections(
+            sequence,
+            (
+                'parameter',
+                'storage',
+                'code',
+            ),
+        )
         cls = type(
             MichelsonProgram.__name__,
             (MichelsonProgram,),
@@ -88,7 +89,7 @@ class MichelsonProgram:
             cls.parameter.as_micheline_expr(),
             cls.storage.as_micheline_expr(),
             cls.code.as_micheline_expr(),
-            *[view.as_micheline_expr() for view in cls.views]
+            *[view.as_micheline_expr() for view in cls.views],
         ]
 
     @classmethod
