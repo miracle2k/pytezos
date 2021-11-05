@@ -13,7 +13,7 @@ from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from pytezos.sandbox.parameters import LATEST
 
-DOCKER_TAG = 'v9.4-1'
+DOCKER_TAG = 'auto-release'
 
 # NOTE: Container object is a singleton which will be used in all tests inherited from class _SandboxedNodeTestCase
 # and stopped after all tests are completed.
