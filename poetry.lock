@@ -351,14 +351,6 @@ optional = false
 python-versions = ">=2.7"
 
 [[package]]
-name = "fastecdsa"
-version = "2.1.2"
-description = "Fast elliptic curve digital signatures"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "idna"
 version = "3.3"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -1538,7 +1530,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "934c40b48ee815dee401ccfa27376d91165c29db189fdc2a29abb7f100b767d4"
+content-hash = "ca661a545a51735321427b017f39c20565900b5c05b94fd94847e97e19d1eac1"
 
 [metadata.files]
 alabaster = [
@@ -1774,13 +1766,6 @@ docutils = [
 entrypoints = [
     {file = "entrypoints-0.3-py2.py3-none-any.whl", hash = "sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19"},
     {file = "entrypoints-0.3.tar.gz", hash = "sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"},
-]
-fastecdsa = [
-    {file = "fastecdsa-2.1.2-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:89ab43f817eaae0ac62af4fddd9e1f4db64116d7fc2ff211e95d3ca9edb680c4"},
-    {file = "fastecdsa-2.1.2-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:ae150715e2b74f1b3f980058c364ea93753a76efc6553b0a0fe10b1174c556fe"},
-    {file = "fastecdsa-2.1.2-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:95238de907c0b906d71f8557266f716e316b0cc37f606e601a7ac1d183a41c85"},
-    {file = "fastecdsa-2.1.2-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:a310f1cd4209f13245f840b803fa47f8f54548f52a054a02492046b66bcac31b"},
-    {file = "fastecdsa-2.1.2.tar.gz", hash = "sha256:49b097fa238ace3b34e6a24f0e315c0987f4d7de8703722c4943651d6547297c"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
